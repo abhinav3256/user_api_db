@@ -35,7 +35,7 @@ func setupRoutes(r *gin.Engine) {
 	r.GET("/user/:user_id", GetUserByUserID)
 	r.GET("/user", GetAllUser)
 	r.POST("/user", CreateUser)
-	//r.PUT("/user/:user_id", MyMiddleware(), UpdateUser)
+	r.PUT("/user/:user_id", UpdateUser)
 	r.DELETE("/user/:user_id", deleteUser)
 }
 
@@ -64,8 +64,17 @@ func GetUserByUserID(c *gin.Context) {
 
 //GetAllUser function
 func GetAllUser(c *gin.Context) {
+
+	users, err := getAllUserFromDB()
+	if err != nil {
+		res := gin.H{
+			"error": err,
+		}
+		c.JSON(http.StatusInternalServerError, res)
+		return
+	}
 	res := gin.H{
-		"user": Data,
+		"users": users,
 	}
 	c.JSON(http.StatusOK, res)
 }
@@ -139,13 +148,13 @@ func UpdateUser(c *gin.Context) {
 		return
 	}
 
-	if reqBody.UserID != userID {
-		res := gin.H{
-			"error": "Invalid UserID",
-		}
-		c.JSON(http.StatusBadRequest, res)
-		return
-	}
+	// if strconv.Itoa(reqBody.ID) != userID {
+	// 	res := gin.H{
+	// 		"error": "Invalid UserID",
+	// 	}
+	// 	c.JSON(http.StatusBadRequest, res)
+	// 	return
+	// }
 	//password := c.GetHeader("password")
 	// if !checkPassword(userID, password) {
 	// 	res := gin.H{
@@ -156,9 +165,10 @@ func UpdateUser(c *gin.Context) {
 	// 	return
 	// }
 
-	Data[userID] = reqBody
+	//Data[userID] = reqBody
+	result, _ := update_user_db(reqBody, userID)
 	res := gin.H{
-		"success": true,
+		"success": result,
 		"user":    reqBody,
 	}
 	c.JSON(http.StatusOK, res)
@@ -178,16 +188,7 @@ func deleteUser(c *gin.Context) {
 		return
 	}
 
-	password := c.GetHeader("password")
-	if !checkPassword(userID, password) {
-		res := gin.H{
-			"success": false,
-		}
-		c.JSON(http.StatusBadRequest, res)
-		return
-	}
-
-	result := delete_user(userID)
+	result, _ := delete_user_db(userID)
 	res := gin.H{
 		"success": true,
 		"message": result,

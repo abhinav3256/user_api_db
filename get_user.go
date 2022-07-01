@@ -22,9 +22,9 @@ func getUserByIDFromDB(userID string) (User, error) {
 	}
 	//defer DB.Close()
 	user := User{}
-	userSQL := "SELECT id, name, userid, phone, city,  password FROM users WHERE userid = $1"
+	userSQL := "SELECT id, name, email,user_id, phone, city,  password FROM users WHERE id = $1"
 
-	err = DB.QueryRow(userSQL, userID).Scan(&user.ID, &user.Name, &user.UserID, &user.Phone, &user.City, &user.Password)
+	err = DB.QueryRow(userSQL, userID).Scan(&user.ID, &user.Name, &user.Email, &user.UserID, &user.Phone, &user.City, &user.Password)
 	if err != nil {
 		log.Println("Failed to execute query: ", err)
 	}
